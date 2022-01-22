@@ -1,5 +1,5 @@
-export default function MyPrePage(html, state={}) {
+export default async function MyPrePage(html, state={}) {
   const { items=[] } = state?.attrs
-  return html`
+  return await html`
 <my-pre items=${items}></my-pre>`
 }

@@ -24,8 +24,8 @@ test('return an html function', t => {
   t.end()
 })
 
-test('expand template', t=> {
-  const actual = html`<my-paragraph></my-paragraph>`
+test('expand template', async t=> {
+  const actual = await html`<my-paragraph></my-paragraph>`
   const expected = doc(`
 <template id="my-paragraph-template">
   <p>
@@ -58,11 +58,22 @@ test('expand template', t=> {
   t.end()
 })
 
-test('Passing state through multiple levels', t=> {
+test.only('Passing state through multiple levels', async t=> {
   const items = ['test']
-  const actual = html`<my-pre-page items="${items}"></my-pre-page>`
+  const actual = await html`<my-pre-page items="${items}"></my-pre-page>`
+  console.log('ACTUAL: ', actual)
   const expected = doc(`
-  <template id="my-pre-page-template"><my-pre items=""></my-pre></template><template id="my-pre-template"><pre></pre></template><my-pre-page items=""><my-pre items=""><pre>test</pre></my-pre></my-pre-page>
+  <template id="my-pre-page-template">
+    <my-pre items=""></my-pre>
+  </template>
+  <template id="my-pre-template">
+    <pre></pre>
+  </template>
+  <my-pre-page items="">
+    <my-pre items="">
+      <pre>test</pre>
+    </my-pre>
+  </my-pre-page>
 `)
   t.equal(
     strip(actual),
@@ -72,8 +83,8 @@ test('Passing state through multiple levels', t=> {
   t.end()
 })
 
-test('fill named slot', t=> {
-  const actual = html`
+test('fill named slot', async t=> {
+  const actual = await html`
 <my-paragraph>
   <span slot="my-text">Slotted</span>
 </my-paragraph>
@@ -109,8 +120,8 @@ test('fill named slot', t=> {
   t.end()
 })
 
-test('add authored children to unnamed slot', t=> {
-  const actual = html`
+test('add authored children to unnamed slot', async t=> {
+  const actual = await html`
   <my-content>
     <h1>YOLO</h1>
     <h4 slot=title>Custom title</h4>
@@ -150,8 +161,8 @@ test('add authored children to unnamed slot', t=> {
   t.end()
 })
 
-test('pass attributes as state', t=> {
-  const actual = html`
+test('pass attributes as state', async t=> {
+  const actual = await html`
 <my-link href='/yolo' text='sketchy'></my-link>
 `
   const expected = doc(`
@@ -181,13 +192,13 @@ test('pass attributes as state', t=> {
   t.end()
 })
 
-test('support spread of object attributes', t=> {
+test('support spread of object attributes', async t=> {
   const o = {
     href: '/yolo',
     text: 'sketchy',
     customAttribute: true
   }
-  const actual = html`
+  const actual = await html`
 <my-link ...${o}></my-link>
 `
   const expected = doc(`
@@ -217,9 +228,9 @@ test('support spread of object attributes', t=> {
   t.end()
 })
 
-test('pass attribute array values correctly', t => {
+test('pass attribute array values correctly', async t => {
   const things = [{ title: 'one' },{ title: 'two' },{ title: 'three' }]
-  const actual = html`
+  const actual = await html`
 <my-list items="${things}"></my-list>
 `
   const expected = doc(`
@@ -261,8 +272,8 @@ test('pass attribute array values correctly', t => {
 })
 
 
-test('update deeply nested slots', t=> {
-  const actual = html`
+test('update deeply nested slots', async t=> {
+  const actual = await html`
   <my-content>
     <my-content>
       <h3 slot="title">Second</h3>
@@ -317,9 +328,9 @@ test('update deeply nested slots', t=> {
   t.end()
 })
 
-test('fill nested rendered slots', t=> {
+test('fill nested rendered slots', async t=> {
   const items = [{ title: 'one' },{ title: 'two' },{ title: 'three' }]
-  const actual = html`
+  const actual = await html`
 <my-list-container items="${items}">
   <span slot=title>YOLO</span>
 </my-list-container>
@@ -388,8 +399,8 @@ test('fill nested rendered slots', t=> {
   t.end()
 })
 
-test('should allow supplying custom head tag', t=> {
-  const actual = html`
+test('should allow supplying custom head tag', async t=> {
+  const actual = await html`
     <head>
       <title>Yolo!</title>
     </head>
@@ -418,7 +429,7 @@ test('should allow supplying custom head tag', t=> {
   t.end()
 })
 
-test('should pass store to template', t => {
+test('should pass store to template', async t => {
   const state = {
     apps: [
       {
@@ -445,7 +456,7 @@ test('should pass store to template', t => {
     templates: './test/fixtures/templates',
     state
   })
-  const actual = html`<my-store-data app-index="0" user-index="1"></my-store-data>`
+  const actual = await html`<my-store-data app-index="0" user-index="1"></my-store-data>`
   const expected = doc(`
 <template id="my-store-data-template">
   <div>

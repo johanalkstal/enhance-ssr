@@ -1,6 +1,6 @@
-export default function MyId(html, state={}) {
+export default async function MyId(html, state={}) {
   const { id } = state?.attrs
-  return `
+  return await html`
 <span id="${id}"></span>
 `
 }

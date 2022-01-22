@@ -10,13 +10,14 @@ export default function Enhancer(options={}) {
   } = options
   const store = Object.assign(state, {})
 
-  return function html(strings, ...values) {
+  return async function html(strings, ...values) {
     const doc = parse(render(strings, ...values))
     const html = doc.childNodes.find(node => node.tagName === 'html')
     const body = html.childNodes.find(node => node.tagName === 'body')
-    const customElements = processCustomElements(body, templates, store)
+    const customElements = await processCustomElements(body, templates, store)
     const moduleNames = [...new Set(customElements.map(node =>  node.tagName))]
-    const templateTags = fragment(moduleNames.map(name => template(name, templates)).join(''))
+    const templateOutput = await Promise.all(moduleNames.map(async name => await template(name, templates)))
+    const templateTags = fragment(templateOutput.join(''))
     addTemplateTags(body, templateTags)
     addScriptStripper(body)
     return serialize(doc).replace(/__b_\d+/g, '')
@@ -55,14 +56,13 @@ function encode(value) {
     return value
   }
 }
-
-function processCustomElements(node, templates, store) {
+async function processCustomElements(node, templates, store) {
   const elements = []
-  const find = (node) => {
+  const find = async (node) => {
     for (const child of node.childNodes) {
       if (isCustomElement(child.tagName)) {
         elements.push(child)
-        const template = expandTemplate(child, templates, store)
+        const template = await expandTemplate(child, templates, store)
         fillSlots(child, template)
         const nodeChildNodes = child.childNodes
         nodeChildNodes.splice(
@@ -78,8 +78,8 @@ function processCustomElements(node, templates, store) {
   return elements
 }
 
-function expandTemplate(node, templates, store) {
-  const frag = fragment(renderTemplate(node.tagName, templates, node.attrs, store) || '')
+async function expandTemplate(node, templates, store) {
+  const frag = fragment(await renderTemplate(node.tagName, templates, node.attrs, store) || '')
   for (const node of frag.childNodes) {
     if (node.nodeName === 'script') {
       frag.childNodes.splice(frag.childNodes.indexOf(node), 1)
@@ -88,16 +88,15 @@ function expandTemplate(node, templates, store) {
   return frag
 }
 
-function renderTemplate(tagName, templates, attrs=[], store={}) {
+async function renderTemplate(tagName, templates, attrs=[], store={}) {
   const templatePath = `${templates}/${tagName}.mjs`
   if (process.env.ARC_SANDBOX) {
     const sandbox = JSON.parse(process.env.ARC_SANDBOX)
     templatePath = join(sandbox.lambdaSrc, 'node_modules', templatePath)
   }
   store.attrs = attrs ? attrsToState(attrs) : {}
-  let rendered = ''
-  import(templatePath).then(mod => { rendered = mod(render, store) })
-  return rendered
+  const mod = await import(templatePath)
+  return mod.default(render, store)
 }
 
 function attrsToState(attrs=[], state={}) {
@@ -204,10 +203,12 @@ function findInserts(node) {
   return elements
 }
 
-function template(name, path) {
+async function template(name, path) {
+  const rendered = await renderTemplate(name, path)
+  console.log('RENDERED: ', rendered)
   return `
 <template id="${name}-template">
-  ${renderTemplate(name, path)}
+  ${rendered}
 </template>
   `
 }

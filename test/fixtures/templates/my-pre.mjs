@@ -1,4 +1,5 @@
-export default function MyMoreContent(html, state={}) {
+export default async function MyMoreContent(html, state={}) {
   const { items=[] } = state?.attrs
-  return html`<pre>${items[0]}</pre >`
+  console.log('ITEMS: ', items[0])
+  return await html`<pre>${items[0]}</pre>`
 }

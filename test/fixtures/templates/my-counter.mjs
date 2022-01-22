@@ -1,6 +1,6 @@
-export default function MyCounter(html, state={}) {
+export default async function MyCounter(html, state={}) {
   const { count=0 } = state.attrs
-  return `
+  return await html`
 <h3>Count: ${count}</h3>
 `
 }

@@ -1,6 +1,6 @@
-export default function MyListContainer(html, state={}) {
+export default async function MyListContainer(html, state={}) {
   const { items } = state?.attrs
-  return html`
+  return await html`
 <h2>My List Container</h2>
 <slot name=title>
   <h3>

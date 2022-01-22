@@ -1,5 +1,5 @@
-export default function MyContent(html, state={}) {
-  return html`
+export default async function MyContent(html, state={}) {
+  return await html`
 <h2>My Content</h2>
 <slot name=title>
   <h3>
